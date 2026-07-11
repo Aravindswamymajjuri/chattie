@@ -15,7 +15,8 @@ const MessageActions = ({
   onPin,
   onClose,
   isMobile,
-  onOpenEmojiPicker
+  onOpenEmojiPicker,
+  onSelect
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -139,6 +140,18 @@ const MessageActions = ({
       <button className={`action-btn star-btn ${isStarred ? 'active' : ''}`} onClick={handleStar} disabled={loading} title={isStarred ? 'Unstar' : 'Star'}>
         <svg viewBox="0 0 24 24" fill={isStarred ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </button>
+
+      <button
+        className="action-btn select-btn"
+        onClick={() => { onSelect?.(messageId); onClose(); }}
+        disabled={loading}
+        title="Select"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 11 12 14 22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
         </svg>
       </button>
 

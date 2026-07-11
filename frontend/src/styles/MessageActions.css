@@ -83,6 +83,7 @@
 }
 
 .emoji-plus-btn svg { color: var(--primary); }
+.select-btn svg { color: var(--primary); }
 
 .action-error {
   color: var(--color-danger);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Auth from './components/Auth';
-import ChatPage from './pages/ChatPage';
+import MainApp from './pages/MainApp';
 import './App.css';
 
 function App() {
@@ -34,7 +34,14 @@ function App() {
   return (
     <div className="app">
       {currentUser ? (
-        <ChatPage currentUser={currentUser} onLogout={handleLogout} onCurrentUserUpdate={(user) => { setCurrentUser(user); localStorage.setItem('currentUser', JSON.stringify(user)); }} />
+        <MainApp
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          onCurrentUserUpdate={(user) => {
+            setCurrentUser(user);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+          }}
+        />
       ) : (
         <Auth onAuthSuccess={handleAuthSuccess} />
       )}

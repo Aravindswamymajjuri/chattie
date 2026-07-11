@@ -10,7 +10,7 @@ import { setupForegroundNotifications, requestFCMToken, registerServiceWorker } 
 import { useAppSecurity, setAppLockSession, wasAppLocked } from '../utils/security';
 import '../styles/ChatPage.css';
 
-const ChatPage = ({ currentUser, onLogout, onCurrentUserUpdate }) => {
+const ChatPage = ({ currentUser, onLogout, onCurrentUserUpdate, onBackToTracker }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
@@ -400,7 +400,7 @@ const ChatPage = ({ currentUser, onLogout, onCurrentUserUpdate }) => {
   }, [selectedUser, currentUser.username, handleMessageSent]);
 
   return (
-    <div className="chat-page">
+    <div className="chat-container-wrap" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <AppLockModal username={currentUser.username} onUnlock={() => { setAppLockSession(currentUser.username); setAppLockModalOpen(false); }} isOpen={appLockModalOpen} />
 
       <div className={`chat-container ${isChatOpen ? 'chat-open' : ''} ${settingsModalOpen ? 'settings-open' : ''}`}>
@@ -417,11 +417,11 @@ const ChatPage = ({ currentUser, onLogout, onCurrentUserUpdate }) => {
               </div>
               {/* Desktop-only: keep sidebar visible */}
               <div className="settings-desktop-sidebar">
-                <Sidebar currentUser={currentUser} selectedUser={selectedUser} onSelectUser={(user) => { setSettingsModalOpen(false); handleSelectUser(user); }} users={users} setUsers={setUsers} unreadCounts={unreadCounts} typingUsers={typingUsers} lastMessageTimes={lastMessageTimes} lastMessages={lastMessages} reactionNotifs={reactionNotifs} onSettingsOpen={() => setSettingsModalOpen(true)} onLogout={handleLogout} onProfilePicUpdate={handleProfilePicUpdate} />
+                <Sidebar currentUser={currentUser} selectedUser={selectedUser} onSelectUser={(user) => { setSettingsModalOpen(false); handleSelectUser(user); }} users={users} setUsers={setUsers} unreadCounts={unreadCounts} typingUsers={typingUsers} lastMessageTimes={lastMessageTimes} lastMessages={lastMessages} reactionNotifs={reactionNotifs} onSettingsOpen={() => setSettingsModalOpen(true)} onLogout={handleLogout} onProfilePicUpdate={handleProfilePicUpdate} onBackToTracker={onBackToTracker} />
               </div>
             </>
           ) : (
-            <Sidebar currentUser={currentUser} selectedUser={selectedUser} onSelectUser={handleSelectUser} users={users} setUsers={setUsers} unreadCounts={unreadCounts} typingUsers={typingUsers} lastMessageTimes={lastMessageTimes} lastMessages={lastMessages} reactionNotifs={reactionNotifs} onSettingsOpen={() => setSettingsModalOpen(true)} onLogout={handleLogout} onProfilePicUpdate={handleProfilePicUpdate} />
+            <Sidebar currentUser={currentUser} selectedUser={selectedUser} onSelectUser={handleSelectUser} users={users} setUsers={setUsers} unreadCounts={unreadCounts} typingUsers={typingUsers} lastMessageTimes={lastMessageTimes} lastMessages={lastMessages} reactionNotifs={reactionNotifs} onSettingsOpen={() => setSettingsModalOpen(true)} onLogout={handleLogout} onProfilePicUpdate={handleProfilePicUpdate} onBackToTracker={onBackToTracker} />
           )}
         </div>
         <div

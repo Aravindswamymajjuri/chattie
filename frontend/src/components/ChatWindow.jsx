@@ -27,6 +27,7 @@ import {
   onMessagesStatusBatchUpdated,
 } from "../utils/socket";
 import MessageActions from "./MessageActions";
+import { emitDeleteMessage, emitDeleteMessageForMe } from "../utils/socket";
 import CallScreen from "./CallScreen";
 import VideoCallScreen from "./VideoCallScreen";
 import IncomingCallPopup from "./IncomingCallPopup";
@@ -128,6 +129,10 @@ const ChatWindow = ({
   const swipeRef = useRef({ msgId: null, x: 0, el: null, arrowEl: null });
   const [hoveredMsgId, setHoveredMsgId] = useState(null);
   const [emojiPickerMsgId, setEmojiPickerMsgId] = useState(null);
+  // Multi-select state
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const selectionMode = selectedIds.size > 0;
+  const [bulkBusy, setBulkBusy] = useState(false);
   const hoverTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -737,6 +742,127 @@ const ChatWindow = ({
     });
   };
 
+  // ===== Multi-select helpers =====
+  const toggleSelect = useCallback((id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const enterSelection = useCallback((id) => {
+    setSelectedIds(new Set([id]));
+    setActiveMessageId(null);
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
+  const selectableMessageIds = useMemo(
+    () => messages.filter((m) => !m.deletedForAll && !m.callEvent).map((m) => m._id),
+    [messages],
+  );
+
+  const allSelected = selectableMessageIds.length > 0 && selectedIds.size === selectableMessageIds.length;
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) =>
+      prev.size === selectableMessageIds.length ? new Set() : new Set(selectableMessageIds),
+    );
+  }, [selectableMessageIds]);
+
+  const selectedMessages = useMemo(
+    () => messages.filter((m) => selectedIds.has(m._id)),
+    [messages, selectedIds],
+  );
+
+  const allSelectedAreOwn = useMemo(
+    () => selectedMessages.length > 0 && selectedMessages.every((m) => m.sender === currentUser.username && !m.deletedForAll),
+    [selectedMessages, currentUser.username],
+  );
+
+  const allSelectedArePinned = useMemo(
+    () => selectedMessages.length > 0 && selectedMessages.every((m) => m.pinned),
+    [selectedMessages],
+  );
+
+  const handleBulkPin = useCallback(async () => {
+    if (bulkBusy || selectedMessages.length === 0) return;
+    setBulkBusy(true);
+    const targetPinned = !allSelectedArePinned; // pin all if any unpinned; unpin all if all pinned
+    const targets = selectedMessages.filter((m) => Boolean(m.pinned) !== targetPinned);
+    try {
+      await Promise.all(targets.map((m) => chatAPI.togglePin(m._id, currentUser.username)));
+      const targetIds = new Set(targets.map((m) => String(m._id)));
+      setMessages((prev) =>
+        prev.map((m) =>
+          targetIds.has(String(m._id))
+            ? { ...m, pinned: targetPinned, pinnedBy: targetPinned ? currentUser.username : null }
+            : m,
+        ),
+      );
+      setPinnedMessages((prev) => {
+        if (!targetPinned) return prev.filter((p) => !targetIds.has(String(p._id)));
+        const additions = targets.filter((m) => !prev.some((p) => String(p._id) === String(m._id)));
+        return [...additions, ...prev];
+      });
+      clearSelection();
+    } finally {
+      setBulkBusy(false);
+    }
+  }, [bulkBusy, selectedMessages, allSelectedArePinned, currentUser.username, setMessages, clearSelection]);
+
+  const handleBulkDeleteForMe = useCallback(async () => {
+    if (bulkBusy || selectedMessages.length === 0) return;
+    if (!window.confirm(`Delete ${selectedMessages.length} message(s) for you only?`)) return;
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        selectedMessages.map((m) =>
+          chatAPI.deleteMessageForMe(m._id, currentUser.username).then(() => {
+            emitDeleteMessageForMe(m._id, currentUser.username);
+          }),
+        ),
+      );
+      const ids = new Set(selectedMessages.map((m) => String(m._id)));
+      setMessages((prev) => prev.filter((m) => !ids.has(String(m._id))));
+      clearSelection();
+    } finally {
+      setBulkBusy(false);
+    }
+  }, [bulkBusy, selectedMessages, currentUser.username, setMessages, clearSelection]);
+
+  const handleBulkDeleteForAll = useCallback(async () => {
+    if (bulkBusy || selectedMessages.length === 0 || !allSelectedAreOwn) return;
+    if (!window.confirm(`Delete ${selectedMessages.length} message(s) for everyone?`)) return;
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        selectedMessages.map((m) =>
+          chatAPI.deleteMessage(m._id).then(() => {
+            emitDeleteMessage(m._id, m.sender, m.receiver);
+          }),
+        ),
+      );
+      const ids = new Set(selectedMessages.map((m) => String(m._id)));
+      setMessages((prev) =>
+        prev.map((m) =>
+          ids.has(String(m._id))
+            ? { ...m, text: "This message was deleted", deletedForAll: true, media: null, replyTo: null }
+            : m,
+        ),
+      );
+      onMessageDeletedForAll?.(selectedUser?.username);
+      clearSelection();
+    } finally {
+      setBulkBusy(false);
+    }
+  }, [bulkBusy, selectedMessages, allSelectedAreOwn, setMessages, onMessageDeletedForAll, selectedUser, clearSelection]);
+
+  // Clear selection on chat switch
+  useEffect(() => { clearSelection(); }, [selectedUser?.username, clearSelection]);
+
   const handleReaction = (messageId, reactions) => {
     setMessages((prev) =>
       prev.map((m) =>
@@ -1016,7 +1142,83 @@ const ChatWindow = ({
         />
       )}
 
-      {/* Chat header with back arrow */}
+      {/* Chat header with back arrow — or selection toolbar when in multi-select */}
+      {selectionMode ? (
+        <div className="chat-header selection-toolbar" data-anim="down">
+          <div className="header-user">
+            <button className="back-btn" onClick={clearSelection} aria-label="Cancel selection" style={{ display: 'flex' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <div className="header-info">
+              <h2>{selectedIds.size} selected</h2>
+            </div>
+          </div>
+          <div className="header-actions">
+            <button
+              className="chat-header-btn"
+              onClick={toggleSelectAll}
+              disabled={bulkBusy}
+              title={allSelected ? "Deselect all" : "Select all"}
+              aria-label={allSelected ? "Deselect all" : "Select all"}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {allSelected ? (
+                  <>
+                    <rect x="3" y="3" width="18" height="18" rx="3"/>
+                    <polyline points="8 12 11 15 16 9"/>
+                  </>
+                ) : (
+                  <>
+                    <rect x="3" y="3" width="18" height="18" rx="3"/>
+                  </>
+                )}
+              </svg>
+            </button>
+            <button
+              className="chat-header-btn"
+              onClick={handleBulkPin}
+              disabled={bulkBusy}
+              title={allSelectedArePinned ? "Unpin selected" : "Pin selected"}
+              aria-label={allSelectedArePinned ? "Unpin selected" : "Pin selected"}
+            >
+              <svg viewBox="0 0 24 24" fill={allSelectedArePinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="17" x2="12" y2="22"/>
+                <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24z"/>
+              </svg>
+            </button>
+            <button
+              className="chat-header-btn"
+              onClick={handleBulkDeleteForMe}
+              disabled={bulkBusy}
+              title="Delete for me"
+              aria-label="Delete for me"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+            {allSelectedAreOwn && (
+              <button
+                className="chat-header-btn delete-all-bulk"
+                onClick={handleBulkDeleteForAll}
+                disabled={bulkBusy}
+                title="Delete for everyone"
+                aria-label="Delete for everyone"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
       <div className="chat-header">
         <div className="header-user">
           {onBack && (
@@ -1184,6 +1386,7 @@ const ChatWindow = ({
           </div>
         </div>
       </div>
+      )}
 
       {/* Most recent pinned message below header */}
       {pinnedMessages.length > 0 && (
@@ -1319,13 +1522,19 @@ const ChatWindow = ({
 
                 const isStarred = msg.starredBy?.includes(currentUser.username);
 
+                const isSelected = selectedIds.has(msg._id);
                 return (
                   <div
                     key={item.key}
                     data-msgid={msg._id}
-                    className={`message ${isSent ? "sent" : "received"} ${msg.deletedForAll ? "deleted" : ""} ${highlightedMessageId === msg._id ? "highlighted" : ""} ${msg.pinned ? "pinned-msg" : ""}`}
+                    className={`message ${isSent ? "sent" : "received"} ${msg.deletedForAll ? "deleted" : ""} ${highlightedMessageId === msg._id ? "highlighted" : ""} ${msg.pinned ? "pinned-msg" : ""} ${selectionMode ? "selectable" : ""} ${isSelected ? "is-selected" : ""}`}
                     onClick={(e) => {
                       if (msg.deletedForAll) return;
+                      if (selectionMode) {
+                        e.stopPropagation();
+                        toggleSelect(msg._id);
+                        return;
+                      }
                       if (isMobileDevice) return;
                       e.stopPropagation();
                       setActiveMessageId(
@@ -1333,6 +1542,7 @@ const ChatWindow = ({
                       );
                     }}
                     onMouseEnter={() => {
+                      if (selectionMode) return;
                       if (!isMobileDevice && !msg.deletedForAll && !msg.callEvent) {
                         clearTimeout(hoverTimeoutRef.current);
                         setHoveredMsgId(msg._id);
@@ -1342,16 +1552,28 @@ const ChatWindow = ({
                       if (isMobileDevice) return;
                       hoverTimeoutRef.current = setTimeout(() => setHoveredMsgId(null), 300);
                     }}
-                    onTouchStart={(e) =>
-                      !msg.deletedForAll && handleTouchStart(e, msg._id)
-                    }
-                    onTouchMove={(e) =>
-                      !msg.deletedForAll && handleTouchMove(e)
-                    }
-                    onTouchEnd={(e) =>
-                      !msg.deletedForAll && handleTouchEnd(e, msg)
-                    }
+                    onTouchStart={(e) => {
+                      if (selectionMode || msg.deletedForAll) return;
+                      handleTouchStart(e, msg._id);
+                    }}
+                    onTouchMove={(e) => {
+                      if (selectionMode || msg.deletedForAll) return;
+                      handleTouchMove(e);
+                    }}
+                    onTouchEnd={(e) => {
+                      if (selectionMode) return; // let onClick handle it — no double-toggle
+                      if (!msg.deletedForAll) handleTouchEnd(e, msg);
+                    }}
                   >
+                    {selectionMode && (
+                      <span className={`select-check ${isSelected ? 'on' : ''}`} aria-hidden="true">
+                        {isSelected && (
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        )}
+                      </span>
+                    )}
                     {/* Swipe reply arrow — hidden by default, shown via DOM during swipe */}
                     <div className="swipe-reply-arrow" style={{ display: 'none', opacity: 0 }}>
                       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1491,7 +1713,7 @@ const ChatWindow = ({
                       </div>
                     )}
                     {/* Hover emoji picker (desktop) or tap emoji picker (mobile) */}
-                    {((!isMobileDevice && hoveredMsgId === msg._id) || (isMobileDevice && emojiPickerMsgId === msg._id)) &&
+                    {!selectionMode && ((!isMobileDevice && hoveredMsgId === msg._id) || (isMobileDevice && emojiPickerMsgId === msg._id)) &&
                       !msg.deletedForAll && !msg.callEvent &&
                       activeMessageId !== msg._id && (
                       <div
@@ -1519,7 +1741,7 @@ const ChatWindow = ({
                         ))}
                       </div>
                     )}
-                    {activeMessageId === msg._id &&
+                    {!selectionMode && activeMessageId === msg._id &&
                       !msg.deletedForAll &&
                       !msg.callEvent && (
                         <MessageActions
@@ -1538,6 +1760,7 @@ const ChatWindow = ({
                             setActiveMessageId(null);
                             setEmojiPickerMsgId(id);
                           }}
+                          onSelect={enterSelection}
                         />
                       )}
                   </div>

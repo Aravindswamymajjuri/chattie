@@ -10,7 +10,7 @@ const DefaultAvatar = () => (
   </svg>
 );
 
-const Sidebar = ({ currentUser, selectedUser, onSelectUser, users, setUsers, unreadCounts, typingUsers, lastMessageTimes, lastMessages, reactionNotifs, onSettingsOpen, onLogout, onProfilePicUpdate }) => {
+const Sidebar = ({ currentUser, selectedUser, onSelectUser, users, setUsers, unreadCounts, typingUsers, lastMessageTimes, lastMessages, reactionNotifs, onSettingsOpen, onLogout, onProfilePicUpdate, onBackToTracker }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [profilePicModalOpen, setProfilePicModalOpen] = useState(false);
   const [viewingUserPic, setViewingUserPic] = useState(null);
@@ -94,7 +94,11 @@ const Sidebar = ({ currentUser, selectedUser, onSelectUser, users, setUsers, unr
   return (
     <div className="sidebar">
       <div className="sidebar-top-header">
-        <span className="sidebar-app-title">Chattie</span>
+        <span
+          className="sidebar-app-title"
+          onClick={onBackToTracker}
+          style={onBackToTracker ? { cursor: 'pointer', userSelect: 'none' } : {}}
+        >Chattie</span>
       </div>
       <div className="search-wrapper">
         <div className="search-box-container">

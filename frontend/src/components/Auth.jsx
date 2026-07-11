@@ -36,17 +36,17 @@ const Auth = ({ onAuthSuccess }) => {
     try {
       // First initialize socket
       initializeSocket();
-      
+
       // Then register and wait for Service Worker to be active
       await registerServiceWorker();
-      
+
       // Now request FCM token (Service Worker is ready)
       const fcmToken = await requestFCMToken();
-      
+
       // Perform login
       const response = await authAPI.login(username, password);
       const user = response.data.user;
-      
+
       // Update FCM token if we got one
       if (fcmToken) {
         try {
@@ -55,7 +55,7 @@ const Auth = ({ onAuthSuccess }) => {
           console.warn('⚠️ Failed to update FCM token, but login succeeded:', tokenErr);
         }
       }
-      
+
       // Join socket
       emitUserJoin(user.username);
       onAuthSuccess(user);
@@ -113,8 +113,8 @@ const Auth = ({ onAuthSuccess }) => {
               <circle className="anim-dot anim-dot-3" cx="56" cy="87" r="3.5" fill="#9B93E0" />
             </g>
           </svg>
-          <h1>Chattie</h1>
-          <p>Professional secure real-time messaging</p>
+          <h1>Tracker</h1>
+          <p>Professional real time Tracking</p>
         </div>
       </div>
 
@@ -122,12 +122,12 @@ const Auth = ({ onAuthSuccess }) => {
       <div className="auth-right">
         <div className="auth-card">
           <h2 className="auth-title">
-            {isRegister ? "Create Chattie" : "Welcome to Chattie"}
+            {isRegister ? "Create Tracker" : "Welcome to Tracker"}
           </h2>
           <p className="auth-subtitle">
             {isRegister
-              ? "Sign up quickly and start chatting"
-              : "Sign in to continue messaging securely"}
+              ? "Sign up quickly and start tracking"
+              : "Sign in to continue tracking"}
           </p>
 
           <form

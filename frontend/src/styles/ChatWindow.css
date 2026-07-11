@@ -742,3 +742,70 @@
   .header-dropdown { min-width: 180px; }
   .dropdown-item { padding: 10px 14px; font-size: 13.5px; }
 }
+
+/* ===== Multi-select mode ===== */
+.chat-header.selection-toolbar {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  box-shadow: 0 2px 12px rgba(108,99,255,0.25);
+}
+.chat-header.selection-toolbar .header-info h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  animation: fadeInUp 0.22s ease both;
+}
+.chat-header-btn.delete-all-bulk svg { color: #ffd2d2; }
+.chat-header.selection-toolbar .chat-header-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.18);
+}
+
+/* Selection mode keeps max-width loose so the checkbox fits */
+.message.selectable {
+  cursor: pointer;
+  max-width: 72%;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.message.selectable:hover { background: rgba(59,130,246,0.06); }
+.message.is-selected {
+  background: rgba(59,130,246,0.12);
+}
+
+/* Square light-blue checkbox — inline flex child, instant feedback */
+.select-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 2px solid #60A5FA;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  align-self: center;
+  transition: background-color 40ms linear, border-color 40ms linear;
+}
+.select-check.on {
+  background: #3B82F6;
+  border-color: #3B82F6;
+}
+.select-check svg {
+  stroke: #fff;
+  stroke-width: 3.5;
+}
+
+/* Light-blue ring on the bubble itself when selected */
+.message.is-selected .message-bubble {
+  box-shadow: 0 0 0 2px #3B82F6, 0 1px 0.5px rgba(0,0,0,0.13);
+}
+.message.is-selected .media-message {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+  .select-check { width: 20px; height: 20px; }
+  .message.selectable { max-width: 80%; }
+}

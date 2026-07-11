@@ -68,6 +68,7 @@ const chatRoutes = require('./routes/chat');
 const notificationRoutes = require('./routes/notification');
 const callHistoryRoutes = require('./routes/callHistory');
 const mediaRoutes = require('./routes/media');
+const tasksRoutes = require('./routes/tasks');
 const chatController = require('./controllers/chatController');
 const authController = require('./controllers/authController');
 
@@ -87,6 +88,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/calls', callHistoryRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/tasks', tasksRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
