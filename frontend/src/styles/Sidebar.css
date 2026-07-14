@@ -84,7 +84,7 @@
 .search-box:focus {
   outline: none;
   border-color: rgba(108, 99, 255, 0.3);
-  background: #fff;
+  background: var(--surface-raised);
 }
 .search-box:focus + .search-icon,
 .search-box-container:focus-within .search-icon { color: var(--primary); }

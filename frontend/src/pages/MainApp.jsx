@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import TopNavBar, { NAV_ITEMS } from '../components/productivity/TopNavBar';
 import BottomNav from '../components/productivity/BottomNav';
+import ThemeToggle from '../components/ThemeToggle';
 import Dashboard from './Dashboard';
 import CalendarPage from './CalendarPage';
 import DailyTracker from './DailyTracker';
@@ -87,6 +88,19 @@ const MainApp = ({ currentUser, onLogout, onCurrentUserUpdate }) => {
             style={{ cursor: 'pointer', userSelect: 'none' }}
           >Trackr</span>
           <div className="trackr-mobile-header-right">
+            <ThemeToggle />
+            <button
+              className="trackr-header-icon-btn"
+              onClick={onLogout}
+              aria-label="Logout"
+              title="Logout"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </button>
             <div className="trackr-user-avatar" title={currentUser.username}>
               {currentUser.profilePic ? (
                 <img src={mediaAPI.getProfilePicUrl(currentUser.profilePic)} alt={currentUser.username} />

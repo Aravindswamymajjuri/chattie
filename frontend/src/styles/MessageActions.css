@@ -160,7 +160,7 @@
   gap: 1px;
   padding: 2px 4px;
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface-raised);
   box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   font-size: 14px;
   line-height: 1;
@@ -174,7 +174,7 @@
 
 /* Highlight own reaction */
 .reaction-pill.own {
-  background: #E8E6FF;
+  background: var(--bg-msg-sent);
   box-shadow: 0 1px 3px rgba(108, 99, 255, 0.2);
 }
 

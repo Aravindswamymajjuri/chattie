@@ -1,0 +1,124 @@
+/* ===== Dark Theme — toggled via data-theme="dark" on <html> ===== */
+[data-theme="dark"] {
+  --bg-app: #12101e;
+  --bg-header: #1a1730;
+  --bg-sidebar: #16142b;
+  --bg-chat: #1a1730;
+  --bg-input-area: #1f1c38;
+  --bg-search: #1f1c38;
+  --bg-hover: #282348;
+
+  --bg-msg-sent: #34307a;
+  --bg-msg-received: #2a2570;
+  --bg-msg-reply: rgba(108, 99, 255, 0.15);
+  --bg-msg-reply-sent: rgba(108, 99, 255, 0.2);
+
+  --text-primary: #e6e4f0;
+  --text-secondary: #a09cb5;
+  --text-light: #7a7594;
+  --text-on-primary: #ffffff;
+  --text-msg: #e6e4f0;
+  --text-time: #7a7594;
+  --text-time-sent: #9994b5;
+
+  --border-light: #2d2950;
+  --border-input: #3d3868;
+
+  --tick-default: #6a6690;
+  --tick-seen: #8B83FF;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.5);
+
+  --bg-modal: #1f1c38;
+  --bg-overlay: rgba(0,0,0,0.65);
+
+  --surface-raised: #242047;
+  --surface-card: #1f1c38;
+
+  color-scheme: dark;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track { background: transparent; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(108,99,255,0.25); }
+
+/* ===== Theme Toggle Button ===== */
+.theme-toggle-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  color: var(--text-on-primary);
+  transition: background var(--transition), opacity var(--transition);
+  opacity: 0.85;
+}
+.theme-toggle-btn:hover { background: rgba(255,255,255,0.12); opacity: 1; }
+.theme-toggle-btn svg { width: 19px; height: 19px; }
+
+/* Sidebar variant — matches other sidebar action buttons */
+.sidebar-current-user-actions .theme-toggle-btn {
+  width: 34px;
+  height: 34px;
+  color: var(--text-light);
+}
+.sidebar-current-user-actions .theme-toggle-btn:hover {
+  background: var(--bg-hover);
+  color: var(--primary);
+}
+
+/* Settings variant — full-width card-style toggle */
+.theme-toggle-settings {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  gap: 12px;
+}
+.theme-toggle-settings .theme-toggle-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.theme-toggle-settings .theme-toggle-label span:first-child {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.theme-toggle-settings .theme-toggle-label span:last-child {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.theme-toggle-settings .theme-toggle-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-hover);
+  color: var(--primary);
+  flex-shrink: 0;
+  transition: background var(--transition);
+}
+.theme-toggle-settings .theme-toggle-icon-wrap svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+.theme-toggle-settings:hover .theme-toggle-icon-wrap {
+  background: var(--border-light);
+}

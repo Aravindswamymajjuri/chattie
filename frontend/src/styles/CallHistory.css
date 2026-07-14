@@ -5,7 +5,7 @@
   right: 0;
   width: 320px;
   height: 100%;
-  background-color: #ffffff;
+  background: var(--surface-raised);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%236C63FF' stroke-opacity='0.06'%3E%3Crect x='6' y='8' width='22' height='14' rx='4' stroke-width='1.2'/%3E%3Cpath d='M10 22l-3 4 6-1' stroke-width='1'/%3E%3Crect x='88' y='48' width='22' height='14' rx='4' stroke-width='1.2'/%3E%3Cpath d='M106 62l3 4-6-1' stroke-width='1'/%3E%3Cpath d='M74 14c0-2.5 4-2.5 4 0s-4 5-4 5-4-2.5-4-5 4-2.5 4 0z' stroke-width='1.1'/%3E%3Cpath d='M96 8l1 3h3l-2.5 2 1 3L96 14.5 93.5 16l1-3L92 11h3z' stroke-width='1'/%3E%3Ccircle cx='60' cy='10' r='1.5' stroke-width='1'/%3E%3Ccircle cx='66' cy='10' r='1.5' stroke-width='1'/%3E%3Ccircle cx='72' cy='10' r='1.5' stroke-width='1'/%3E%3Cpath d='M6 88 Q12 84 18 88 Q24 92 30 88' stroke-width='1.1'/%3E%3Cpath d='M56 58l4-5 4 5 4-5 4 5' stroke-width='1'/%3E%3Cpath d='M108 76l4 4m0-4l-4 4' stroke-width='1.2'/%3E%3Cpath d='M50 6l1 2 2 1-2 1-1 2-1-2-2-1 2-1z' stroke-width='1'/%3E%3Cpath d='M36 106l3 4-3 4-3-4z' stroke-width='1'/%3E%3Ccircle cx='86' cy='78' r='3' stroke-width='1'/%3E%3C/g%3E%3Cg fill='%236C63FF' fill-opacity='0.05'%3E%3Ccircle cx='34' cy='60' r='1.5'/%3E%3Ccircle cx='100' cy='56' r='1'/%3E%3Ccircle cx='6' cy='76' r='1.2'/%3E%3C/g%3E%3C/svg%3E");
   border-left: 1px solid var(--border-light);
   display: flex;

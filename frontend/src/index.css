@@ -43,6 +43,10 @@
   --bg-modal: #ffffff;
   --bg-overlay: rgba(30,28,60,0.45);
 
+  /* Surface aliases — used where raw #fff / #000 was hardcoded */
+  --surface-raised: #ffffff;
+  --surface-card: #ffffff;
+
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 16px;

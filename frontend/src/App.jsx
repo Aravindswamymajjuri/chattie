@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Auth from './components/Auth';
 import MainApp from './pages/MainApp';
+import { ThemeProvider } from './contexts/ThemeContext';
 import './App.css';
 
 function App() {
@@ -32,20 +33,22 @@ function App() {
   if (loading) return null;
 
   return (
-    <div className="app">
-      {currentUser ? (
-        <MainApp
-          currentUser={currentUser}
-          onLogout={handleLogout}
-          onCurrentUserUpdate={(user) => {
-            setCurrentUser(user);
-            localStorage.setItem('currentUser', JSON.stringify(user));
-          }}
-        />
-      ) : (
-        <Auth onAuthSuccess={handleAuthSuccess} />
-      )}
-    </div>
+    <ThemeProvider>
+      <div className="app">
+        {currentUser ? (
+          <MainApp
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            onCurrentUserUpdate={(user) => {
+              setCurrentUser(user);
+              localStorage.setItem('currentUser', JSON.stringify(user));
+            }}
+          />
+        ) : (
+          <Auth onAuthSuccess={handleAuthSuccess} />
+        )}
+      </div>
+    </ThemeProvider>
   );
 }
 

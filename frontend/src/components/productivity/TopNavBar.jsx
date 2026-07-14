@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { mediaAPI } from '../../utils/api';
+import ThemeToggle from '../ThemeToggle';
 
 const DefaultAvatar = () => (
   <svg className="default-avatar-svg" viewBox="0 0 212 212" width="100%" height="100%">
@@ -171,6 +172,7 @@ const TopNavBar = ({ currentUser, activePage, onNavigate, onLogout, onLogoClick 
         </div>
         <div className="trackr-header-right">
           <div className="trackr-user-info">
+            <ThemeToggle />
             <div className="trackr-user-avatar" title={currentUser.username}>
               {currentUser.profilePic ? (
                 <img src={getProfilePicUrl(currentUser.profilePic)} alt={currentUser.username} />
@@ -179,7 +181,7 @@ const TopNavBar = ({ currentUser, activePage, onNavigate, onLogout, onLogoClick 
               )}
             </div>
             <span className="trackr-user-name">{currentUser.username}</span>
-            {/* Chevron dropdown indicator */}
+            {/* Logout button */}
             <button
               className="trackr-header-icon-btn"
               onClick={onLogout}
